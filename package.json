@@ -1,0 +1,52 @@
+{
+  "name": "@resolid/cache-manager-sqlite",
+  "version": "5.0.0",
+  "description": "A new SQLite store for cache-manager",
+  "keywords": [
+    "cache-manager",
+    "sqlite",
+    "better-sqlite3"
+  ],
+  "license": "MIT",
+  "sideEffects": false,
+  "type": "module",
+  "author": "Huijie Wei",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest --ui",
+    "format": "biome format ./src"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^8.4.0",
+    "@types/better-sqlite3": "^7.6.9",
+    "@vitest/ui": "^1.2.2",
+    "better-sqlite3": "^9.3.0",
+    "cache-manager": "^5.4.0",
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.2"
+  },
+  "peerDependencies": {
+    "better-sqlite3": "^9.3.0",
+    "cache-manager": "^5.4.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/huijiewei/cache-manager-sqlite.git"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
