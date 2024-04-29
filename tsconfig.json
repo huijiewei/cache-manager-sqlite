@@ -1,38 +1,24 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  "include": [
-    "src",
-    "vitest.config.ts",
-    "tsup.config.ts"
-  ],
+  "include": ["src", "vitest.config.ts", "tsup.config.ts"],
   "compilerOptions": {
-    "baseUrl": ".",
-    // Type Checking
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "target": "es2022",
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "moduleDetection": "force",
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+
     "strict": true,
     "noFallthroughCasesInSwitch": true,
-    // Modules
-    "module": "ES2022",
-    "moduleResolution": "Bundler",
-    "resolveJsonModule": true,
-    // Emit
+    "noImplicitOverride": true,
+
+    "module": "preserve",
     "noEmit": true,
-    "verbatimModuleSyntax": true,
-    // JavaScript Support
-    "allowJs": true,
-    // Interop Constraints
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    // Language and Environment
-    "lib": [
-      "DOM",
-      "DOM.Iterable",
-      "ES2022"
-    ],
-    "types": [
-      "@types/better-sqlite3"
-    ],
-    "target": "ES2022",
-    // Completeness
-    "skipLibCheck": true
+
+    "lib": ["es2022"],
+    "types": ["@types/better-sqlite3"]
   }
 }

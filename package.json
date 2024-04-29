@@ -1,12 +1,8 @@
 {
   "name": "@resolid/cache-manager-sqlite",
-  "version": "5.0.0",
+  "version": "5.1.0",
   "description": "A new SQLite store for cache-manager",
-  "keywords": [
-    "cache-manager",
-    "sqlite",
-    "better-sqlite3"
-  ],
+  "keywords": ["cache-manager", "sqlite", "better-sqlite3"],
   "license": "MIT",
   "sideEffects": false,
   "type": "module",
@@ -14,33 +10,41 @@
   "publishConfig": {
     "access": "public"
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "build": "tsup",
     "test": "vitest --ui",
-    "format": "biome format ./src"
+    "check": "biome check --apply ./src"
   },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     }
   },
   "devDependencies": {
-    "@faker-js/faker": "^8.4.0",
-    "@types/better-sqlite3": "^7.6.9",
-    "@vitest/ui": "^1.2.2",
-    "better-sqlite3": "^9.3.0",
-    "cache-manager": "^5.4.0",
-    "tsup": "^8.0.1",
-    "typescript": "^5.3.3",
-    "vitest": "^1.2.2"
+    "@biomejs/biome": "^1.7.1",
+    "@faker-js/faker": "^8.4.1",
+    "@types/better-sqlite3": "^7.6.10",
+    "@vitest/ui": "^1.5.2",
+    "better-sqlite3": "^9.6.0",
+    "cache-manager": "^5.5.1",
+    "tsup": "^8.0.2",
+    "typescript": "^5.4.5",
+    "vitest": "^1.5.2"
   },
   "peerDependencies": {
-    "better-sqlite3": "^9.3.0",
-    "cache-manager": "^5.4.0"
+    "better-sqlite3": "^9.6.0",
+    "cache-manager": "^5.5.1"
   },
   "repository": {
     "type": "git",
