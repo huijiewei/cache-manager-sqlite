@@ -53,7 +53,7 @@ CREATE INDEX IF NOT EXISTS idx_expired_caches ON ${tableName}(expiredAt);
     const trans = sqlite.transaction<(keys: string[]) => CacheObject[]>((keys) => {
       return keys
         .map((key) => selectStatement.get(key) as CacheObject | undefined)
-        .filter((data) => data != undefined && (data.expiredAt == -1 || data.expiredAt > ts)) as CacheObject[];
+        .filter((data) => data !== undefined && (data.expiredAt == -1 || data.expiredAt > ts)) as CacheObject[];
     });
 
     return trans(args);
