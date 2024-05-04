@@ -24,7 +24,7 @@ export type SqliteStore = Store & {
 export type SqliteCache = Cache<SqliteStore>;
 
 export const sqliteStore = (options: SqliteStoreOptions): SqliteStore => {
-  const isCacheable = options?.isCacheable ?? ((val) => val != undefined);
+  const isCacheable = options?.isCacheable ?? ((val) => val !== undefined);
 
   const sqlite = new Database(options.sqliteFile);
   const tableName = options.cacheTableName;
