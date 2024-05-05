@@ -24,7 +24,7 @@ export type SqliteStore = Store & {
 export type SqliteCache = Cache<SqliteStore>;
 
 export const sqliteStore = (options: SqliteStoreOptions): SqliteStore => {
-  const isCacheable = options?.isCacheable ?? ((val) => val != undefined);
+  const isCacheable = options?.isCacheable ?? ((val) => val !== undefined);
 
   const sqlite = new Database(options.sqliteFile);
   const tableName = options.cacheTableName;
@@ -53,7 +53,7 @@ CREATE INDEX IF NOT EXISTS idx_expired_caches ON ${tableName}(expiredAt);
     const trans = sqlite.transaction<(keys: string[]) => CacheObject[]>((keys) => {
       return keys
         .map((key) => selectStatement.get(key) as CacheObject | undefined)
-        .filter((data) => data != undefined && (data.expiredAt == -1 || data.expiredAt > ts)) as CacheObject[];
+        .filter((data) => data !== undefined && (data.expiredAt == -1 || data.expiredAt > ts)) as CacheObject[];
     });
 
     return trans(args);
