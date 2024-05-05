@@ -45,7 +45,7 @@ CREATE INDEX IF NOT EXISTS idx_expired_caches ON ${tableName}(expiredAt);
   );
   const deleteStatement = sqlite.prepare(`DELETE FROM ${tableName} WHERE cacheKey IN (?)`);
   const finderStatement = sqlite.prepare(
-    `SELECT cacheKey FROM ${tableName} WHERE cacheKey LIKE ? AND expiredAt = -1 OR expiredAt < ?`,
+    `SELECT cacheKey FROM ${tableName} WHERE cacheKey LIKE ? AND expiredAt = -1 OR expiredAt > ?`,
   );
   const purgeStatement = sqlite.prepare(`DELETE FROM ${tableName} WHERE expiredAt != -1 AND expiredAt < ?`);
   const emptyStatement = sqlite.prepare(`DELETE FROM ${tableName}`);
