@@ -53,8 +53,7 @@ describe("set", () => {
     await expect(sqliteCacheTtl.get("foo")).resolves.toEqual("bar");
   });
 
-  it("should not be able to store a null value (not cacheable)", () =>
-    expect(sqliteCache.set("foo2", null)).rejects.toBeDefined());
+  it("should be able to store a null value", () => expect(sqliteCache.set("foo2", null)).resolves.toBeUndefined());
 
   it("should not store an invalid value", () =>
     expect(sqliteCache.set("foo1", undefined)).rejects.toStrictEqual(new Error("no cacheable value undefined")));
@@ -111,7 +110,7 @@ describe("mset", () => {
   });
 
   it("should not be able to store a null value (not cacheable)", () =>
-    expect(sqliteCache.store.mset([["foo2", null]])).rejects.toBeDefined());
+    expect(sqliteCache.store.mset([["foo2", null]])).resolves.toBeUndefined());
 
   it("should store a value without ttl", async () => {
     await sqliteCache.store.mset([

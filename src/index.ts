@@ -43,30 +43,37 @@ CREATE INDEX IF NOT EXISTS idx_expired_caches ON ${tableName}(expiredAt);
   const updateStatement = sqlite.prepare(
     `INSERT OR REPLACE INTO ${tableName}(cacheKey, cacheData, createdAt, expiredAt) VALUES (?, ?, ?, ?)`,
   );
-  const deleteStatement = sqlite.prepare(`DELETE FROM ${tableName} WHERE cacheKey = ?`);
-  const finderStatement = sqlite.prepare(`SELECT cacheKey FROM ${tableName} WHERE cacheKey LIKE ?`);
+  const deleteStatement = sqlite.prepare(`DELETE FROM ${tableName} WHERE cacheKey IN (?)`);
+  const finderStatement = sqlite.prepare(
+    `SELECT cacheKey FROM ${tableName} WHERE cacheKey LIKE ? AND expiredAt = -1 OR expiredAt < ?`,
+  );
+  const purgeStatement = sqlite.prepare(`DELETE FROM ${tableName} WHERE expiredAt != -1 AND expiredAt < ?`);
   const emptyStatement = sqlite.prepare(`DELETE FROM ${tableName}`);
 
   const fetchCaches = (...args: string[]): CacheObject[] => {
+    let purgeExpired = false;
     const ts = now();
 
-    const trans = sqlite.transaction<(keys: string[]) => CacheObject[]>((keys) => {
-      return keys
-        .map((key) => selectStatement.get(key) as CacheObject | undefined)
-        .filter((data) => data !== undefined && (data.expiredAt == -1 || data.expiredAt > ts)) as CacheObject[];
-    });
+    const result = args
+      .map((key) => {
+        const data = selectStatement.get(key) as CacheObject | undefined;
+        if (data !== undefined && data.expiredAt !== -1 && data.expiredAt < ts) {
+          purgeExpired = true;
+          return undefined;
+        }
+        return data;
+      })
+      .filter((data) => data !== undefined) as CacheObject[];
 
-    return trans(args);
+    if (purgeExpired) {
+      process.nextTick(() => purgeStatement.run(ts));
+    }
+
+    return result;
   };
 
   const deleteCaches = (...args: string[]) => {
-    const trans = sqlite.transaction<(keys: string[]) => void>((keys) => {
-      for (const key of keys) {
-        deleteStatement.run(key);
-      }
-    });
-
-    trans(args);
+    deleteStatement.run(args.join(","));
   };
 
   const updateCatches = (args: [string, unknown][], ttl?: Milliseconds) => {
@@ -74,19 +81,12 @@ CREATE INDEX IF NOT EXISTS idx_expired_caches ON ${tableName}(expiredAt);
     const createdAt = now();
     const expiredAt = t != undefined && t != 0 ? createdAt + t : -1;
 
-    const trans = sqlite.transaction<(args: [string, unknown][], createdAt: number, expiredAt: number) => void>(
-      (args, createdAt, expiredAt) => {
-        for (const cache of args) {
-          if (!isCacheable(cache[1])) {
-            throw new Error(`no cacheable value ${JSON.stringify(cache[1])}`);
-          }
-
-          updateStatement.run(cache[0], JSON.stringify(cache[1]), createdAt, expiredAt);
-        }
-      },
-    );
-
-    trans(args, createdAt, expiredAt);
+    for (const cache of args) {
+      if (!isCacheable(cache[1])) {
+        throw new Error(`no cacheable value ${JSON.stringify(cache[1])}`);
+      }
+      updateStatement.run(cache[0], JSON.stringify(cache[1]), createdAt, expiredAt);
+    }
   };
 
   return {
@@ -118,7 +118,7 @@ CREATE INDEX IF NOT EXISTS idx_expired_caches ON ${tableName}(expiredAt);
     keys(pattern?: string): Promise<string[]> {
       return new Promise((resolve, reject) => {
         try {
-          const result = (finderStatement.all(pattern?.replace("*", "%") ?? "%") as CacheObject[]).map(
+          const result = (finderStatement.all(pattern?.replace("*", "%") ?? "%", now()) as CacheObject[]).map(
             (cache) => cache.cacheKey,
           );
           resolve(result);
