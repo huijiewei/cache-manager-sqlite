@@ -46,40 +46,43 @@ export const sqliteStore = (options: SqliteStoreOptions): SqliteStore => {
 CREATE INDEX IF NOT EXISTS idx_expired_caches ON ${tableName}(expiredAt);
 `);
 
-  const selectStatement = sqlite.prepare(`SELECT * FROM ${tableName} WHERE cacheKey = ?`);
+  const selectStatement = sqlite.prepare<string, CacheObject>(`SELECT * FROM ${tableName} WHERE cacheKey = ?`);
   const updateStatement = sqlite.prepare(
     `INSERT OR REPLACE INTO ${tableName}(cacheKey, cacheData, createdAt, expiredAt) VALUES (?, ?, ?, ?)`,
   );
-  const deleteStatement = sqlite.prepare(`DELETE FROM ${tableName} WHERE cacheKey IN (?)`);
+  const deleteStatement = sqlite.prepare(`DELETE FROM ${tableName} WHERE cacheKey = ?`);
   const finderStatement = sqlite.prepare(
     `SELECT cacheKey FROM ${tableName} WHERE cacheKey LIKE ? AND (expiredAt = -1 OR expiredAt > ?)`,
   );
+  const purgeStatement = sqlite.prepare(`DELETE FROM ${tableName} WHERE expiredAt != -1 AND expiredAt < ?`);
   const emptyStatement = sqlite.prepare(`DELETE FROM ${tableName}`);
 
   const fetchCaches = (...args: string[]): CacheObject[] => {
     const ts = now();
-    const expiredKeys: string[] = [];
+    let purgeExpired = false;
 
     const result = args
       .map((key) => {
-        const data = selectStatement.get(key) as CacheObject | undefined;
+        const data = selectStatement.get(key);
         if (data !== undefined && data.expiredAt !== -1 && data.expiredAt < ts) {
-          expiredKeys.push(data.cacheKey);
+          purgeExpired = true;
           return undefined;
         }
         return data;
       })
       .filter((data) => data !== undefined) as CacheObject[];
 
-    if (expiredKeys.length > 0) {
-      deleteStatement.run(expiredKeys.join(","));
+    if (purgeExpired) {
+      process.nextTick(() => purgeStatement.run(ts));
     }
 
     return result;
   };
 
   const deleteCaches = (...args: string[]) => {
-    deleteStatement.run(args.join(","));
+    for (const key in args) {
+      deleteStatement.run(key);
+    }
   };
 
   const updateCatches = (args: [string, unknown][], ttl?: Milliseconds) => {
