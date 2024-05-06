@@ -23,7 +23,8 @@
         "noNonNullAssertion": "off"
       },
       "suspicious": {
-        "noDoubleEquals": "off"
+        "noDoubleEquals": "off",
+        "noRedeclare": "off"
       }
     }
   }
