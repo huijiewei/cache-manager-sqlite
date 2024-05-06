@@ -30,7 +30,7 @@ import {join} from 'node:path';
 // SQLite :memory: cache store
 const memStoreCache = cacheManager.caching(sqliteStore({cacheTableName: 'caches'}));
 
-// On disk cache on employees table
+// On disk cache on caches table
 const sqliteStoreCache = cacheManager.caching(sqliteStore({sqliteFile: join(process.cwd(), 'cache.sqlite3'), cacheTableName: 'caches'}))
 ```
 

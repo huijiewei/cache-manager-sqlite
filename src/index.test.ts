@@ -7,7 +7,6 @@ const sleep = (timeout: number) => new Promise((resolve) => setTimeout(resolve, 
 
 let sqliteCache: SqliteCache;
 let sqliteCacheTtl: SqliteCache;
-let sqliteCacheInMemory: SqliteCache;
 
 const sqliteFile = join(process.cwd(), "runtime", "cache.sqlite3");
 const cacheTableName = "caches";
@@ -40,11 +39,11 @@ describe("set", () => {
   });
 
   it("should store a value with a specific ttl from global", async () => {
-    await sqliteCacheTtl.set("foo", "bar");
+    await sqliteCacheTtl.set("foo333", "bar");
     await sleep(2);
-    await expect(sqliteCacheTtl.get("foo")).resolves.toEqual("bar");
+    await expect(sqliteCacheTtl.get("foo333")).resolves.toEqual("bar");
     await sleep(500);
-    await expect(sqliteCacheTtl.get("foo")).resolves.toBeUndefined();
+    await expect(sqliteCacheTtl.get("foo333")).resolves.toBeUndefined();
   });
 
   it("should store a value with 0 ttl", async () => {
@@ -53,8 +52,7 @@ describe("set", () => {
     await expect(sqliteCacheTtl.get("foo")).resolves.toEqual("bar");
   });
 
-  it("should not be able to store a null value (not cacheable)", () =>
-    expect(sqliteCache.set("foo2", null)).rejects.toBeDefined());
+  it("should be able to store a null value", () => expect(sqliteCache.set("foo2", null)).resolves.toBeUndefined());
 
   it("should not store an invalid value", () =>
     expect(sqliteCache.set("foo1", undefined)).rejects.toStrictEqual(new Error("no cacheable value undefined")));
@@ -111,7 +109,7 @@ describe("mset", () => {
   });
 
   it("should not be able to store a null value (not cacheable)", () =>
-    expect(sqliteCache.store.mset([["foo2", null]])).rejects.toBeDefined());
+    expect(sqliteCache.store.mset([["foo2", null]])).resolves.toBeUndefined());
 
   it("should store a value without ttl", async () => {
     await sqliteCache.store.mset([
