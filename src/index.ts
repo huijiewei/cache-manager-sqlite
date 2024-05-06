@@ -4,6 +4,7 @@ import type { Cache, Config, Milliseconds, Store } from "cache-manager";
 type SqliteStoreOptions = {
   sqliteFile?: string;
   cacheTableName: string;
+  enableWALMode?: boolean;
 } & Config;
 
 type CacheObject = {
@@ -25,8 +26,14 @@ export type SqliteCache = Cache<SqliteStore>;
 
 export const sqliteStore = (options: SqliteStoreOptions): SqliteStore => {
   const isCacheable = options?.isCacheable ?? ((val) => val !== undefined);
+  const enableWALMode = options?.enableWALMode ?? true;
 
   const sqlite = new Database(options.sqliteFile);
+
+  if (enableWALMode) {
+    sqlite.pragma("journal_mode = WAL");
+  }
+
   const tableName = options.cacheTableName;
 
   sqlite.exec(`
