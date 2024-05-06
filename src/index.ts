@@ -46,12 +46,14 @@ export const sqliteStore = (options: SqliteStoreOptions): SqliteStore => {
 CREATE INDEX IF NOT EXISTS idx_expired_caches ON ${tableName}(expiredAt);
 `);
 
+  const selectSingleStatement = sqlite.prepare<string, CacheObject>(`SELECT * FROM ${tableName} WHERE cacheKey = ?`);
   const selectStatement = sqlite.prepare<string, CacheObject>(
     `SELECT * FROM ${tableName} WHERE cacheKey IN (SELECT value FROM json_each(?))`,
   );
   const updateStatement = sqlite.prepare(
     `INSERT OR REPLACE INTO ${tableName}(cacheKey, cacheData, createdAt, expiredAt) VALUES (?, ?, ?, ?)`,
   );
+  const deleteSingleStatement = sqlite.prepare(`DELETE FROM ${tableName} WHERE cacheKey = ?`);
   const deleteStatement = sqlite.prepare(`DELETE FROM ${tableName} WHERE cacheKey IN (SELECT value FROM json_each(?))`);
   const finderStatement = sqlite.prepare(
     `SELECT cacheKey FROM ${tableName} WHERE cacheKey LIKE ? AND (expiredAt = -1 OR expiredAt > ?)`,
@@ -63,26 +65,45 @@ CREATE INDEX IF NOT EXISTS idx_expired_caches ON ${tableName}(expiredAt);
     const ts = now();
     let purgeExpired = false;
 
-    const result = selectStatement
-      .all(JSON.stringify(args))
-      .map((data) => {
-        if (data.expiredAt !== -1 && data.expiredAt < ts) {
-          purgeExpired = true;
-          return undefined;
-        }
-        return data;
-      })
-      .filter((data) => data !== undefined) as CacheObject[];
+    const result =
+      args.length >= 3
+        ? selectStatement
+            .all(JSON.stringify(args))
+            .map((data) => {
+              if (data.expiredAt !== -1 && data.expiredAt < ts) {
+                purgeExpired = true;
+                return undefined;
+              }
+              return data;
+            })
+            .filter((data) => data !== undefined)
+        : args
+            .map((key) => {
+              const data = selectSingleStatement.get(key);
+              if (data !== undefined && data.expiredAt !== -1 && data.expiredAt < ts) {
+                purgeExpired = true;
+                return undefined;
+              }
+
+              return data;
+            })
+            .filter((data) => data !== undefined);
 
     if (purgeExpired) {
       process.nextTick(() => purgeStatement.run(ts));
     }
 
-    return result;
+    return result as CacheObject[];
   };
 
   const deleteCaches = (...args: string[]) => {
-    deleteStatement.run(JSON.stringify(args));
+    if (args.length >= 3) {
+      deleteStatement.run(JSON.stringify(args));
+    } else {
+      for (const k of args) {
+        deleteSingleStatement.run(k);
+      }
+    }
   };
 
   const updateCatches = (args: [string, unknown][], ttl?: Milliseconds) => {

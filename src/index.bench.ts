@@ -7,14 +7,14 @@ let sqlite: Database.Database;
 const sqliteFile = join(process.cwd(), "runtime", "cache.sqlite3");
 const cacheTableName = "caches";
 
-const argsCount = 3;
+const argsCount = 2;
 
 const keys = Array.from({ length: 10000 }, (_, i) => i + 1);
 
 beforeAll(async () => {
   sqlite = new Database(sqliteFile);
 
-  sqlite.pragma("journal_mode = WAL");
+  //sqlite.pragma("journal_mode = WAL");
 
   sqlite.exec(`
  CREATE TABLE IF NOT EXISTS ${cacheTableName} (
@@ -32,7 +32,7 @@ CREATE INDEX IF NOT EXISTS idx_expired_caches ON ${cacheTableName}(expiredAt);
 
   const createdAt = new Date().getTime();
 
-  for (const k in keys) {
+  for (const k of keys) {
     updateStatement.run(k, "cacheData", createdAt, -1);
   }
 });
@@ -42,7 +42,7 @@ describe("sqlite select", () => {
     const selectStatement = sqlite.prepare(`SELECT * FROM ${cacheTableName} WHERE cacheKey = ?`);
     const selectKeys = Array.from({ length: argsCount }, (_, i) => i + 1);
 
-    for (const k in selectKeys) {
+    for (const k of selectKeys) {
       selectStatement.get(k);
     }
   });
@@ -61,7 +61,7 @@ describe("sqlite delete", () => {
     const deleteStatement = sqlite.prepare(`DELETE FROM ${cacheTableName} WHERE cacheKey = ?`);
     const deleteKeys = Array.from({ length: argsCount }, (_, i) => i + 1000);
 
-    for (const k in deleteKeys) {
+    for (const k of deleteKeys) {
       deleteStatement.run(k);
     }
   });
