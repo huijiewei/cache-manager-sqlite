@@ -145,7 +145,8 @@ describe("mget", () => {
 describe("del", () => {
   it("should delete a value for a given key", async () => {
     await sqliteCache.set("foo", "bar");
-    await expect(sqliteCache.del("foo")).resolves.toBeUndefined();
+    await sqliteCache.del("foo");
+    await expect(sqliteCache.get("foo")).resolves.toBeUndefined();
   });
 
   it("should delete a unlimited number of keys", async () => {
@@ -153,7 +154,10 @@ describe("del", () => {
       ["foo", "bar"],
       ["foo2", "bar2"],
     ]);
-    await expect(sqliteCache.store.mdel("foo", "foo2")).resolves.toBeUndefined();
+
+    await sqliteCache.store.mdel("foo", "foo2");
+
+    await expect(sqliteCache.store.mget("foo", "foo2")).resolves.toStrictEqual([undefined, undefined]);
   });
 
   it("should return an error if there is an error acquiring a connection", async () => {

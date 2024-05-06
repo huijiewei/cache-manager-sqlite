@@ -46,11 +46,13 @@ export const sqliteStore = (options: SqliteStoreOptions): SqliteStore => {
 CREATE INDEX IF NOT EXISTS idx_expired_caches ON ${tableName}(expiredAt);
 `);
 
-  const selectStatement = sqlite.prepare<string, CacheObject>(`SELECT * FROM ${tableName} WHERE cacheKey = ?`);
+  const selectStatement = sqlite.prepare<string, CacheObject>(
+    `SELECT * FROM ${tableName} WHERE cacheKey IN (SELECT value FROM json_each(?))`,
+  );
   const updateStatement = sqlite.prepare(
     `INSERT OR REPLACE INTO ${tableName}(cacheKey, cacheData, createdAt, expiredAt) VALUES (?, ?, ?, ?)`,
   );
-  const deleteStatement = sqlite.prepare(`DELETE FROM ${tableName} WHERE cacheKey = ?`);
+  const deleteStatement = sqlite.prepare(`DELETE FROM ${tableName} WHERE cacheKey IN (SELECT value FROM json_each(?))`);
   const finderStatement = sqlite.prepare(
     `SELECT cacheKey FROM ${tableName} WHERE cacheKey LIKE ? AND (expiredAt = -1 OR expiredAt > ?)`,
   );
@@ -61,10 +63,10 @@ CREATE INDEX IF NOT EXISTS idx_expired_caches ON ${tableName}(expiredAt);
     const ts = now();
     let purgeExpired = false;
 
-    const result = args
-      .map((key) => {
-        const data = selectStatement.get(key);
-        if (data !== undefined && data.expiredAt !== -1 && data.expiredAt < ts) {
+    const result = selectStatement
+      .all(JSON.stringify(args))
+      .map((data) => {
+        if (data.expiredAt !== -1 && data.expiredAt < ts) {
           purgeExpired = true;
           return undefined;
         }
@@ -80,9 +82,7 @@ CREATE INDEX IF NOT EXISTS idx_expired_caches ON ${tableName}(expiredAt);
   };
 
   const deleteCaches = (...args: string[]) => {
-    for (const key in args) {
-      deleteStatement.run(key);
-    }
+    deleteStatement.run(JSON.stringify(args));
   };
 
   const updateCatches = (args: [string, unknown][], ttl?: Milliseconds) => {
@@ -94,6 +94,7 @@ CREATE INDEX IF NOT EXISTS idx_expired_caches ON ${tableName}(expiredAt);
       if (!isCacheable(cache[1])) {
         throw new Error(`no cacheable value ${JSON.stringify(cache[1])}`);
       }
+
       updateStatement.run(cache[0], JSON.stringify(cache[1]), createdAt, expiredAt);
     }
   };
