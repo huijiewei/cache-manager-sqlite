@@ -149,7 +149,7 @@ CREATE INDEX IF NOT EXISTS idx_expired_caches ON ${tableName}(expiredAt);
     keys(pattern?: string): Promise<string[]> {
       return new Promise((resolve, reject) => {
         try {
-          const result = (finderStatement.all(pattern?.replace("*", "%") ?? "%", now()) as CacheObject[]).map(
+          const result = (finderStatement.all(pattern?.replaceAll("*", "%") ?? "%", now()) as CacheObject[]).map(
             (cache) => cache.cacheKey,
           );
           resolve(result);
