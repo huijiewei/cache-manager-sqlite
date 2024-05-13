@@ -1,6 +1,6 @@
 {
   "name": "@resolid/cache-manager-sqlite",
-  "version": "5.1.4",
+  "version": "5.1.5",
   "description": "A new SQLite store for cache-manager",
   "keywords": ["cache-manager", "sqlite", "better-sqlite3"],
   "license": "MIT",
