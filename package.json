@@ -1,6 +1,6 @@
 {
   "name": "@resolid/cache-manager-sqlite",
-  "version": "5.1.5",
+  "version": "5.1.6",
   "description": "A new SQLite store for cache-manager",
   "keywords": ["cache-manager", "sqlite", "better-sqlite3"],
   "license": "MIT",
@@ -15,7 +15,7 @@
     "build": "tsup",
     "bench": "vitest bench",
     "test": "vitest --ui",
-    "check": "biome check --apply ./src"
+    "check": "biome check --write ./src"
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -33,19 +33,19 @@
     }
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.7.2",
+    "@biomejs/biome": "^1.8.3",
     "@faker-js/faker": "^8.4.1",
-    "@types/better-sqlite3": "^7.6.10",
+    "@types/better-sqlite3": "^7.6.11",
     "@vitest/ui": "^1.6.0",
-    "better-sqlite3": "^9.6.0",
-    "cache-manager": "^5.5.2",
-    "tsup": "^8.0.2",
-    "typescript": "^5.4.5",
+    "better-sqlite3": "^11.1.2",
+    "cache-manager": "^5.7.1",
+    "tsup": "^8.1.0",
+    "typescript": "^5.5.3",
     "vitest": "^1.6.0"
   },
   "peerDependencies": {
-    "better-sqlite3": "^9.6.0",
-    "cache-manager": "^5.5.2"
+    "better-sqlite3": "^11.1.2",
+    "cache-manager": "^5.7.1"
   },
   "repository": {
     "type": "git",

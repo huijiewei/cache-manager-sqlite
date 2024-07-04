@@ -19,7 +19,7 @@ const now = () => {
 };
 
 export type SqliteStore = Store & {
-  name: string,
+  name: string;
   get client(): ReturnType<typeof Database>;
 };
 
@@ -122,7 +122,7 @@ CREATE INDEX IF NOT EXISTS idx_expired_caches ON ${tableName}(expiredAt);
   };
 
   return {
-    name: 'sqlite',
+    name: "sqlite",
     del(key: string): Promise<void> {
       return new Promise((resolve, reject) => {
         try {

@@ -23,15 +23,22 @@ npm i @resolid/cache-manager-sqlite
 ## Usage
 
 ```js
-import {sqliteStore} from '@resolid/cache-manager-sqlite';
-import {createCache} from 'cache-manager';
-import {join} from 'node:path';
+import { sqliteStore } from '@resolid/cache-manager-sqlite';
+import cacheManager,{ createCache } from "cache-manager";
+import { join } from 'node:path';
 
 // SQLite :memory: cache store
-const memStoreCache = cacheManager.caching(sqliteStore({cacheTableName: 'caches'}));
+const memStoreCache = await cacheManager.caching(sqliteStore({cacheTableName: 'caches'}));
 
 // On disk cache on caches table
-const sqliteStoreCache = cacheManager.caching(sqliteStore({sqliteFile: join(process.cwd(), 'cache.sqlite3'), cacheTableName: 'caches'}))
+const sqliteStoreCache = await cacheManager.caching(sqliteStore({sqliteFile: join(process.cwd(), 'cache.sqlite3'), cacheTableName: 'caches'}));
+
+// SQLite :memory: cache store sync version
+const memStoreCache = createCache(sqliteStore({cacheTableName: 'caches'}));
+
+// On disk cache on caches table sync version
+const sqliteStoreCache = createCache(sqliteStore({sqliteFile: join(process.cwd(), 'cache.sqlite3'), cacheTableName: 'caches'}))
+
 ```
 
 ## License
